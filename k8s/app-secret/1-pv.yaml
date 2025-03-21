@@ -21,5 +21,5 @@ spec:
     - ReadWriteMany
   nfs:
     path: /  # dir no EFS onde os logs serão armazenados
-    server: fs-0baaa40fde80e3c3a.efs.us-east-1.amazonaws.com
+    server: fs-085685e71cf98f9fe.efs.us-east-1.amazonaws.com
   storageClassName: efs-storage-class
