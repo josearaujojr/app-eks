@@ -19,12 +19,10 @@ variables:
 
 before_script:
   # Instalar dependências básicas
-  - apk add --no-cache curl git unzip
+  - apk add --no-cache curl git unzip python3 py3-pip
 
-  # Instalar AWS CLI
-  - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-  - unzip awscliv2.zip
-  - ./aws/install
+  # Instalar AWS CLI via pip (alternativa mais confiável)
+  - pip3 install --upgrade awscli
   - aws --version
 
   # Instalar kubectl
