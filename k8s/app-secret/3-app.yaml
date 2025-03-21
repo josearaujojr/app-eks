@@ -17,7 +17,7 @@ spec:
     objects: |
       - objectName: s3-credentials
         objectType: secretsmanager
-        objectAlias: s3-credentials
+        objectAlias: s3-credentials-secret
         jmesPath:
           - path: AWS_ACCESS_KEY_ID
             objectAlias: aws-access-key-id
