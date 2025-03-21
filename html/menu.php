@@ -14,7 +14,7 @@
                 <a href="rds.php" style="color: SlateBlue;" onmouseover="this.style.color='blue'" onmouseout="this.style.color='SlateBlue'"><b>RDS</b></a>
             </li>
             <li>
-                <a href="s3-input.php" style="color: SlateBlue;" onmouseover="this.style.color='blue'" onmouseout="this.style.color='SlateBlue'"><b>S3</b></a>
+                <a href="list_files.php" style="color: SlateBlue;" onmouseover="this.style.color='blue'" onmouseout="this.style.color='SlateBlue'"><b>S3</b></a>
             </li>
             <li>
                 <a href="imagem.php" style="color: SlateBlue;" onmouseover="this.style.color='blue'" onmouseout="this.style.color='SlateBlue'"><b>IMAGEM</b></a>
