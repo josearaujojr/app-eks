@@ -1,0 +1,62 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  AWS_ACCOUNT_ID: "881490100310"
+  AWS_DEFAULT_REGION: "us-east-1"           # Região da AWS
+  APP_NAME: "app-eks-app"                   # Nome da aplicação
+  ECR_REPO: "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"  # Repositório ECR
+  IMAGE_TAG: "latest"                       # Tag da imagem Docker
+  CLUSTER_NAME: "app-eks-cluster"           # Nome do cluster EKS
+
+before_script:
+  # Instalar dependências básicas
+  - apt-get update && apt-get install -y curl unzip git
+
+  # Instalar Docker
+  - curl -fsSL https://get.docker.com -o get-docker.sh
+  - sh get-docker.sh
+
+  # Instalar AWS CLI
+  - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+  - unzip awscliv2.zip
+  - ./aws/install
+  - aws --version
+
+  # Instalar kubectl
+  - curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+  - install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+  - kubectl version --client
+
+  # Autenticar na AWS
+  - aws configure set aws_access_key_id ${AWS_ACCESS_KEY_ID}
+  - aws configure set aws_secret_access_key ${AWS_SECRET_ACCESS_KEY}
+  - aws configure set region ${AWS_DEFAULT_REGION}
+
+build:
+  stage: build
+  script:
+    - echo "Construindo a imagem Docker..."
+    - docker build -t ${APP_NAME}:${IMAGE_TAG} .
+    - echo "Autenticando no ECR..."
+    - aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${ECR_REPO}
+    - echo "Taggeando a imagem..."
+    - docker tag ${APP_NAME}:${IMAGE_TAG} ${ECR_REPO}/${APP_NAME}:${IMAGE_TAG}
+    - echo "Enviando a imagem para o ECR..."
+    - docker push ${ECR_REPO}/${APP_NAME}:${IMAGE_TAG}
+  only:
+    - main
+
+deploy:
+  stage: deploy
+  script:
+    - echo "Configurando o acesso ao cluster EKS..."
+    - aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${AWS_DEFAULT_REGION}
+    - echo "Implantando a aplicação no Kubernetes..."
+    - kubectl apply -f k8s/app-secret/1-pv.yaml
+    - kubectl apply -f k8s/app-secret/2-pvc.yaml
+    - kubectl apply -f k8s/app-secret/3-app.yaml
+  when: manual
+  only:
+    - main
