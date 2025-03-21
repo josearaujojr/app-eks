@@ -1,3 +1,8 @@
+image: docker:24.0  # Usar uma imagem Docker oficial
+
+services:
+  - docker:dind  # Serviço Docker-in-Docker
+
 stages:
   - build
   - deploy
@@ -9,14 +14,12 @@ variables:
   ECR_REPO: "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"  # Repositório ECR
   IMAGE_TAG: "latest"                       # Tag da imagem Docker
   CLUSTER_NAME: "app-eks-cluster"           # Nome do cluster EKS
+  DOCKER_HOST: tcp://docker:2375            # Configurar o Docker para usar o serviço DinD
+  DOCKER_TLS_CERTDIR: ""                    # Desabilitar TLS para simplificar
 
 before_script:
   # Instalar dependências básicas
-  - apt-get update && apt-get install -y curl unzip git
-
-  # Instalar Docker
-  - curl -fsSL https://get.docker.com -o get-docker.sh
-  - sh get-docker.sh
+  - apk add --no-cache curl git unzip
 
   # Instalar AWS CLI
   - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
