@@ -21,8 +21,12 @@ before_script:
   # Instalar dependências básicas
   - apk add --no-cache curl git unzip python3 py3-pip
 
-  # Instalar AWS CLI via pip (alternativa mais confiável)
-  - pip3 install --upgrade awscli
+  # Criar e ativar um ambiente virtual Python
+  - python3 -m venv /opt/venv
+  - source /opt/venv/bin/activate
+
+  # Instalar AWS CLI no ambiente virtual
+  - pip install --upgrade awscli
   - aws --version
 
   # Instalar kubectl
