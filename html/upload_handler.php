@@ -1,5 +1,6 @@
 <?php
 require 'vendor/autoload.php';
+
 use Aws\S3\S3Client;
 use Aws\Exception\AwsException;
 use Aws\S3\Exception\S3Exception;
@@ -7,45 +8,62 @@ use Aws\S3\Exception\S3Exception;
 header('Content-Type: application/json');
 
 try {
-    // Verifica se o arquivo foi enviado corretamente
+    // Verifica se o arquivo foi enviado
     if (!isset($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
         throw new Exception('Nenhum arquivo foi enviado ou ocorreu um erro no upload.');
     }
 
-    // Configuração do cliente S3
+    $file = $_FILES['fileToUpload'];
+
+    // Validações básicas
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        throw new Exception('Erro no upload do arquivo.');
+    }
+
+    if ($file['size'] > 10 * 1024 * 1024) { // 10MB max
+        throw new Exception('O arquivo é muito grande. Tamanho máximo: 10MB');
+    }
+
+    // Configura o cliente S3
     $s3Client = new S3Client([
         'version' => 'latest',
-        'region'  => 'us-east-1', // Altere para sua região
+        'region'  => getenv('AWS_DEFAULT_REGION'),
         'credentials' => [
-            'key'    => 'SUA_ACCESS_KEY', // Substitua pela sua AWS Access Key
-            'secret' => 'SUA_SECRET_KEY', // Substitua pela sua AWS Secret Key
-        ],
+            'key'    => getenv('AWS_ACCESS_KEY_ID'),
+            'secret' => getenv('AWS_SECRET_ACCESS_KEY'),
+        ]
     ]);
 
-    // Dados do arquivo
-    $filePath = $_FILES['file']['tmp_name'];
-    $fileName = basename($_FILES['file']['name']);
-    $bucketName = 'SEU_BUCKET'; // Substitua pelo nome do seu bucket
+    // Gera um nome único para o arquivo
+    $fileExtension = pathinfo($file['name'], PATHINFO_EXTENSION);
+    $fileName = uniqid() . '.' . $fileExtension;
+    $bucket = getenv('S3_BUCKET_NAME');
 
     // Faz o upload para o S3
     $result = $s3Client->putObject([
-        'Bucket' => $bucketName,
-        'Key'    => $fileName,
-        'SourceFile' => $filePath,
+        'Bucket' => $bucket,
+        'Key'    => 'uploads/' . $fileName,
+        'SourceFile' => $file['tmp_name'],
+        'ACL'    => 'public-read',
+        'ContentType' => mime_content_type($file['tmp_name'])
     ]);
 
-    // Retorna a URL do arquivo no S3 (opcional)
-    $fileUrl = $result->get('ObjectURL');
-
+    // Retorna a URL pública do arquivo
     echo json_encode([
         'success' => true,
         'message' => 'Arquivo enviado com sucesso!',
-        'url'     => $fileUrl,
-    ]);
+        'url' => $result['ObjectURL']
+    ], JSON_UNESCAPED_SLASHES);
 
+} catch (S3Exception $e) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Erro no S3: ' . $e->getAwsErrorMessage()
+    ]);
 } catch (Exception $e) {
     echo json_encode([
         'success' => false,
-        'message' => 'Erro: ' . $e->getMessage(),
+        'message' => 'Erro: ' . $e->getMessage()
     ]);
 }
+?>
