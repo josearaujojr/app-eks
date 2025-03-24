@@ -1,0 +1,135 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: app-eks
+  namespace: app
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::881490100310:role/app-eks-secret-role
+---
+apiVersion: secrets-store.csi.x-k8s.io/v1
+kind: SecretProviderClass
+metadata:
+  name: aws-secrets
+  namespace: app
+spec:
+  provider: aws
+  parameters:
+    objects: |
+      - objectName: s3-credentials
+        objectType: secretsmanager
+        objectAlias: s3-credentials-secret
+        jmesPath:
+          - path: AWS_ACCESS_KEY_ID
+            objectAlias: aws-access-key-id
+          - path: AWS_SECRET_ACCESS_KEY
+            objectAlias: aws-secret-access-key
+          - path: AWS_DEFAULT_REGION
+            objectAlias: aws-default-region
+          - path: S3_BUCKET_NAME
+            objectAlias: s3-bucket-name
+  secretObjects:
+    - secretName: api-token
+      type: Opaque
+      data:
+        - objectName: aws-access-key-id
+          key: aws-access-key-id
+        - objectName: aws-secret-access-key
+          key: aws-secret-access-key
+        - objectName: aws-default-region
+          key: aws-default-region
+        - objectName: s3-bucket-name
+          key: s3-bucket-name
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-eks
+  namespace: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-eks
+  template:
+    metadata:
+      labels:
+        app: app-eks   
+    spec:
+      serviceAccountName: app-eks
+      containers:
+      - name: app-eks
+        image: 881490100310.dkr.ecr.us-east-1.amazonaws.com/app-eks-app:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: efs-storage
+          mountPath: /var/log/apache2
+          subPath: app
+        - name: my-api-token
+          mountPath: /mnt/api-token
+          readOnly: true
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: api-token
+              key: aws-access-key-id
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-token
+              key: aws-secret-access-key
+        - name: AWS_DEFAULT_REGION
+          valueFrom:
+            secretKeyRef:
+              name: api-token
+              key: aws-default-region
+        - name: S3_BUCKET_NAME
+          valueFrom:
+            secretKeyRef:
+              name: api-token
+              key: s3-bucket-name
+      volumes:
+      - name: efs-storage
+        persistentVolumeClaim:
+          claimName: efs-pvc
+      - name: my-api-token
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: aws-secrets
+      imagePullSecrets:
+      - name: ecr-credentials
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-eks
+  namespace: app
+spec:
+  selector:
+    app: app-eks
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jornada-ingress
+  namespace: app
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /app1(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: app-eks
+            port:
+              number: 80
