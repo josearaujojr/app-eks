@@ -1,10 +1,5 @@
-<?php include('s3-conf.php'); ?>
-
+<?php ?>
 <nav class="navbar navbar-default" role="navigation" style="background-color: LavenderBlush; height: 60px;">
-    <div class="navbar-header">
-        <a class="navbar-brand" href="/"><img height="38" src="<?php echo $linkestatico?>/<?php echo $bucket ?>/<?php echo $arqName ?>" /></a>
-    </div>
-
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
         <ul class="nav navbar-nav">
             <li>
