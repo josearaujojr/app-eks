@@ -50,8 +50,9 @@ build:
     - docker tag ${APP_NAME}:${IMAGE_TAG} ${ECR_REPO}/${APP_NAME}:${IMAGE_TAG}
     - echo "Enviando a imagem para o ECR..."
     - docker push ${ECR_REPO}/${APP_NAME}:${IMAGE_TAG}
-  # only:
-  #   - main
+  when: manual
+  only:
+    - main
 
 deploy:
   stage: deploy
@@ -63,6 +64,6 @@ deploy:
     - kubectl apply -f k8s/app-secret/1-pv.yaml
     - kubectl apply -f k8s/app-secret/2-pvc.yaml
     - kubectl apply -f k8s/app-secret/3-app.yaml
-  #when: manual
-  # only:
-  #   - main
+  when: manual
+  only:
+    - main
