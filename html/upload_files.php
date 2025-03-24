@@ -58,7 +58,7 @@
         }
     });
 
-    // Envio via AJAX
+    // Envio via AJAX (atualizado)
     $('#uploadForm').on('submit', function(e) {
         e.preventDefault();
         
@@ -71,13 +71,23 @@
             data: formData,
             processData: false,
             contentType: false,
+            dataType: 'json', // Adicione esta linha para esperar JSON
             success: function(response) {
-                $('#statusMessage').html('<div class="alert alert-success">'+response+'</div>');
+                if (response.success) {
+                    $('#statusMessage').html('<div class="alert alert-success">'+response.message+'<br>URL: '+response.url+'</div>');
+                } else {
+                    $('#statusMessage').html('<div class="alert alert-danger">'+response.message+'</div>');
+                }
                 $('#preview').hide();
                 $('#uploadForm')[0].reset();
             },
             error: function(xhr) {
-                $('#statusMessage').html('<div class="alert alert-danger">Erro: '+xhr.responseText+'</div>');
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    $('#statusMessage').html('<div class="alert alert-danger">Erro: '+response.message+'</div>');
+                } catch (e) {
+                    $('#statusMessage').html('<div class="alert alert-danger">Erro desconhecido: '+xhr.responseText+'</div>');
+                }
             }
         });
     });

@@ -8,8 +8,8 @@ use Aws\S3\Exception\S3Exception;
 header('Content-Type: application/json');
 
 try {
-    // Verifica se o arquivo foi enviado
-    if (!isset($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
+    // Verifica se o arquivo foi enviado (corrigido o nome do campo)
+    if (!isset($_FILES['fileToUpload']) || $_FILES['fileToUpload']['error'] !== UPLOAD_ERR_OK) {
         throw new Exception('Nenhum arquivo foi enviado ou ocorreu um erro no upload.');
     }
 
