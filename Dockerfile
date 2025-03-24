@@ -1,22 +1,31 @@
 FROM ubuntu:24.10
 
-# Instala dependências básicas
+# Instala dependências básicas e extensões PHP necessárias
 RUN apt-get update && apt-get upgrade -y && \
-    apt-get install -y apache2 mysql-client php libapache2-mod-php php-mysql curl unzip git
+    apt-get install -y \
+    apache2 \
+    mysql-client \
+    php \
+    libapache2-mod-php \
+    php-mysql \
+    php-xml \
+    php-curl \
+    php-zip \
+    curl \
+    unzip \
+    git && \
+    rm -rf /var/lib/apt/lists/*
 
 # Instala Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Instala AWS SDK via Composer
-RUN mkdir -p /var/www/sdk
-WORKDIR /var/www/sdk
-RUN composer require aws/aws-sdk-php
-RUN cp -r /var/www/sdk/vendor /var/www/html/
+# Configura o diretório de trabalho e instala o AWS SDK
+WORKDIR /var/www/html
+RUN composer require aws/aws-sdk-php:^3.258
 
 # Configuração do Apache
-RUN a2enmod rewrite
-RUN mkdir -p /var/www/html
-RUN rm /var/www/html/index.html
+RUN a2enmod rewrite && \
+    rm /var/www/html/index.html
 
 # Copia os arquivos da aplicação
 COPY html /var/www/html/

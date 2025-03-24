@@ -48,57 +48,81 @@
         <h2>Conteúdo do Bucket S3</h2>
 
         <?php
-            // Ativa exibição de erros
-            ini_set('display_errors', 1);
-            ini_set('display_startup_errors', 1);
-            error_reporting(E_ALL);
+// Desativa warnings de depreciação (opcional para produção)
+error_reporting(E_ALL ^ E_DEPRECATED);
 
-            // Verifica se o SDK está instalado
-            if (!file_exists('/var/www/html/vendor/autoload.php')) {
-                die('<div class="alert alert-danger">AWS SDK não instalado. Execute: composer require aws/aws-sdk-php</div>');
+// Verifica se o SDK está instalado
+if (!file_exists('/var/www/html/vendor/autoload.php')) {
+    die('<div class="alert alert-danger">AWS SDK não instalado</div>');
+}
+
+require '/var/www/html/vendor/autoload.php';
+
+use Aws\S3\S3Client;
+use Aws\Exception\AwsException;
+
+// Verifica se SimpleXML está instalado
+if (!extension_loaded('simplexml')) {
+    die('<div class="alert alert-danger">Extensão SimpleXML não está instalada</div>');
+}
+
+// Verifica variáveis de ambiente
+$requiredVars = ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_DEFAULT_REGION', 'S3_BUCKET_NAME'];
+foreach ($requiredVars as $var) {
+    if (empty(getenv($var))) {
+        die("<div class='alert alert-danger'>Variável $var não está definida</div>");
+    }
+}
+
+try {
+    // Configuração do cliente S3
+    $s3Client = new S3Client([
+        'version' => 'latest',
+        'region'  => getenv('AWS_DEFAULT_REGION'),
+        'credentials' => [
+            'key'    => getenv('AWS_ACCESS_KEY_ID'),
+            'secret' => getenv('AWS_SECRET_ACCESS_KEY'),
+        ],
+        'http' => [
+            'verify' => false // Apenas para desenvolvimento
+        ]
+    ]);
+
+    // Lista os objetos no bucket
+    $result = $s3Client->listObjects([
+        'Bucket' => getenv('S3_BUCKET_NAME')
+    ]);
+
+    echo '<div class="gallery">';
+    
+    if (!empty($result['Contents'])) {
+        foreach ($result['Contents'] as $object) {
+            $key = $object['Key'];
+            $presignedUrl = $s3Client->getObjectUrl(
+                getenv('S3_BUCKET_NAME'),
+                $key,
+                '+15 minutes'
+            );
+            
+            echo '<div class="gallery-item">';
+            if (preg_match('/\.(jpg|jpeg|png|gif|webp)$/i', $key)) {
+                echo '<img src="'.htmlspecialchars($presignedUrl).'" alt="'.htmlspecialchars($key).'">';
+            } else {
+                echo '<div class="file-icon"></div>';
             }
+            echo '<div class="file-name">'.htmlspecialchars($key).'</div>';
+            echo '</div>';
+        }
+    } else {
+        echo '<div class="alert alert-info">O bucket está vazio</div>';
+    }
+    
+    echo '</div>';
 
-            require '/var/www/html/vendor/autoload.php';
-
-            use Aws\S3\S3Client;
-            use Aws\Exception\AwsException;
-
-            // Verifica variáveis de ambiente
-            $requiredVars = ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_DEFAULT_REGION', 'S3_BUCKET_NAME'];
-            foreach ($requiredVars as $var) {
-                if (empty(getenv($var))) {
-                    die("<div class='alert alert-danger'>Variável $var não está definida</div>");
-                }
-            }
-
-            try {
-                $s3Client = new S3Client([
-                    'version' => 'latest',
-                    'region'  => getenv('AWS_DEFAULT_REGION'),
-                    'credentials' => [
-                        'key'    => getenv('AWS_ACCESS_KEY_ID'),
-                        'secret' => getenv('AWS_SECRET_ACCESS_KEY'),
-                    ],
-                    'http' => [
-                        'verify' => false // Desativa verificação SSL se necessário
-                    ]
-                ]);
-
-                // DEBUG: Verifica conexão com o S3
-                $buckets = $s3Client->listBuckets();
-                echo "<!-- Conexão com S3 bem-sucedida. Buckets disponíveis: " . json_encode($buckets['Buckets']) . " -->";
-
-                $result = $s3Client->listObjects([
-                    'Bucket' => getenv('S3_BUCKET_NAME')
-                ]);
-
-                // Restante do código para exibir as imagens...
-                
-            } catch (AwsException $e) {
-                echo "<div class='alert alert-danger'>ERRO S3: " . $e->getAwsErrorMessage() . "</div>";
-                echo "<!-- Detalhes do erro: " . $e->getMessage() . " -->";
-            }
-        ?>
+} catch (AwsException $e) {
+    echo '<div class="alert alert-danger">Erro ao acessar S3: '.htmlspecialchars($e->getAwsErrorMessage()).'</div>';
+}
+?>
 
     </div>
 
