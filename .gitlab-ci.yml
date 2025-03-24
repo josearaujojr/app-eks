@@ -61,9 +61,9 @@ deploy:
     - aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${AWS_DEFAULT_REGION}
     - echo "Implantando a aplicação no Kubernetes..."
     - kubectl delete deployment app-eks -n app
-    - kubectl apply -f k8s/app-secret/1-pv.yaml
-    - kubectl apply -f k8s/app-secret/2-pvc.yaml
-    - kubectl apply -f k8s/app-secret/3-app.yaml
+    - kubectl apply -f k8s/app/1-pv.yaml
+    - kubectl apply -f k8s/app/2-pvc.yaml
+    - kubectl apply -f k8s/app/3-deployment.yaml
   when: manual
   only:
     - main
