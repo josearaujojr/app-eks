@@ -17,7 +17,7 @@
                 <a href="list_files.php" style="color: SlateBlue;" onmouseover="this.style.color='blue'" onmouseout="this.style.color='SlateBlue'"><b>S3</b></a>
             </li>
             <li>
-                <a href="imagem.php" style="color: SlateBlue;" onmouseover="this.style.color='blue'" onmouseout="this.style.color='SlateBlue'"><b>IMAGEM</b></a>
+                <a href="upload_files.php" style="color: SlateBlue;" onmouseover="this.style.color='blue'" onmouseout="this.style.color='SlateBlue'"><b>IMAGEM</b></a>
             </li>
         </ul>
     </div>

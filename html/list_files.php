@@ -16,18 +16,6 @@
                     <div class="form-group"></div>
                     <div class="navbar-header"></div>
 
-                    <form name="input" style="width: 90%;" action="s3-write-config.php" method="post" class="form-horizontal">
-                        <div class="form-group" style="margin-top: 20px;">
-                            <div class="col-sm-10"></div>
-                        </div>
-
-                        <div class="form-group">
-                            <div class="col-sm-offset-2 col-sm-10">
-                                <input class="btn btn-primary btn-sm" type="submit" class="btn btn-default"/>
-                            </div>
-                        </div>
-                    </form>
-
                     <!-- Incluindo a lista de arquivos do S3 -->
                     <div class="container" style="margin-top: 20px;">
                         <?php
