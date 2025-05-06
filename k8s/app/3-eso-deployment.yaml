@@ -39,19 +39,19 @@ spec:
   data:
     - secretKey: aws-access-key-id
       remoteRef:
-        key: s3-credentials
+        key: s3-credentials-3
         property: AWS_ACCESS_KEY_ID
     - secretKey: aws-secret-access-key
       remoteRef:
-        key: s3-credentials
+        key: s3-credentials-3
         property: AWS_SECRET_ACCESS_KEY
     - secretKey: aws-default-region
       remoteRef:
-        key: s3-credentials
+        key: s3-credentials-3
         property: AWS_DEFAULT_REGION
     - secretKey: s3-bucket-name
       remoteRef:
-        key: s3-credentials
+        key: s3-credentials-3
         property: S3_BUCKET_NAME
 ---
 apiVersion: apps/v1
