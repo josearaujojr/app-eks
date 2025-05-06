@@ -18,7 +18,7 @@ header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
       <?php include('menu.php'); ?>
       <div class="jumbotron">
       <p>
-      <h1>Site em DEV</h1>
+      <h1>Site em desenvolvimento...</h1>
       </p>
     </div>
     </div>
