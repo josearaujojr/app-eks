@@ -1,7 +1,7 @@
-image: docker:24.0  # Usar uma imagem Docker oficial
+image: docker:24.0
 
 services:
-  - docker:dind  # Serviço Docker-in-Docker
+  - docker:dind
 
 stages:
   - build
@@ -9,35 +9,23 @@ stages:
 
 variables:
   AWS_ACCOUNT_ID: "881490100310"
-  AWS_DEFAULT_REGION: "us-east-1"           # Região da AWS
-  APP_NAME: "app-eks-app"                   # Nome da aplicação
-  ECR_REPO: "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"  # Repositório ECR
-  IMAGE_TAG: "latest"                       # Tag da imagem Docker
-  CLUSTER_NAME: "app-eks-cluster"           # Nome do cluster EKS
-  DOCKER_HOST: tcp://docker:2375            # Configurar o Docker para usar o serviço DinD
-  DOCKER_TLS_CERTDIR: ""                    # Desabilitar TLS para simplificar
+  AWS_DEFAULT_REGION: "us-east-1"
+  APP_NAME: "app-eks-app"
+  ECR_REPO: "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+  IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"  # ← hash do commit
+  CLUSTER_NAME: "app-eks-cluster"
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
   EFS_SERVER: fs-096e5f2e658e54136.efs.us-east-1.amazonaws.com
   SECRET_NAME: s3-credentials-3
 
 before_script:
-  # Instalar dependências básicas
-  - apk add --no-cache curl git unzip python3 py3-pip gettext  # ← gettext inclui o envsubst
-  - apk add --no-cache curl git unzip python3 py3-pip
-
-  # Criar e ativar um ambiente virtual Python
+  - apk add --no-cache curl git unzip python3 py3-pip gettext
   - python3 -m venv /opt/venv
   - source /opt/venv/bin/activate
-
-  # Instalar AWS CLI no ambiente virtual
   - pip install --upgrade awscli
-  - aws --version
-
-  # Instalar kubectl
   - curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
   - install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-  - kubectl version --client
-
-  # Autenticar na AWS
   - aws configure set aws_access_key_id ${AWS_ACCESS_KEY_ID}
   - aws configure set aws_secret_access_key ${AWS_SECRET_ACCESS_KEY}
   - aws configure set region ${AWS_DEFAULT_REGION}
@@ -53,7 +41,6 @@ build:
     - docker tag ${APP_NAME}:${IMAGE_TAG} ${ECR_REPO}/${APP_NAME}:${IMAGE_TAG}
     - echo "Enviando a imagem para o ECR..."
     - docker push ${ECR_REPO}/${APP_NAME}:${IMAGE_TAG}
-  #when: manual
   only:
     - main
 
@@ -62,11 +49,10 @@ deploy:
   script:
     - echo "Configurando o acesso ao cluster EKS..."
     - aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${AWS_DEFAULT_REGION}
+    - export IMAGE="${ECR_REPO}/${APP_NAME}:${IMAGE_TAG}"  # ← substitui no YAML
     - echo "Implantando a aplicação no Kubernetes..."
-    #- kubectl delete deployment app-eks -n app
     - envsubst < k8s/app/1-pv.yaml | kubectl apply -f -
     - envsubst < k8s/app/2-pvc.yaml | kubectl apply -f -
     - envsubst < k8s/app/3-deployment.yaml | kubectl apply -f -
-  #when: manual
   only:
     - main

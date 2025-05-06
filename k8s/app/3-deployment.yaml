@@ -53,12 +53,12 @@ spec:
   template:
     metadata:
       labels:
-        app: app-eks   
+        app: app-eks
     spec:
       serviceAccountName: app-eks
       containers:
       - name: app-eks
-        image: 881490100310.dkr.ecr.us-east-1.amazonaws.com/app-eks-app:latest
+        image: ${IMAGE}  # ← substituído via envsubst
         ports:
         - containerPort: 80
         volumeMounts:
