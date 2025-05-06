@@ -15,9 +15,9 @@ spec:
   provider: aws
   parameters:
     objects: |
-      - objectName: {{SECRET_NAME}}
+      - objectName: ${SECRET_NAME}
         objectType: secretsmanager
-        objectAlias: {{SECRET_NAME}}-secret
+        objectAlias: ${SECRET_NAME}-secret
         jmesPath:
           - path: AWS_ACCESS_KEY_ID
             objectAlias: aws-access-key-id

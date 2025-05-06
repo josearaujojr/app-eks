@@ -21,5 +21,5 @@ spec:
     - ReadWriteMany
   nfs:
     path: /  # dir no EFS onde os logs serão armazenados
-    server: {{EFS_SERVER}}
+    server: ${EFS_SERVER}
   storageClassName: efs-storage-class
