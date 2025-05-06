@@ -21,6 +21,7 @@ variables:
 
 before_script:
   # Instalar dependências básicas
+  - apk add --no-cache curl git unzip python3 py3-pip gettext  # ← gettext inclui o envsubst
   - apk add --no-cache curl git unzip python3 py3-pip
 
   # Criar e ativar um ambiente virtual Python
@@ -52,7 +53,7 @@ build:
     - docker tag ${APP_NAME}:${IMAGE_TAG} ${ECR_REPO}/${APP_NAME}:${IMAGE_TAG}
     - echo "Enviando a imagem para o ECR..."
     - docker push ${ECR_REPO}/${APP_NAME}:${IMAGE_TAG}
-  when: manual
+  #when: manual
   only:
     - main
 
@@ -66,6 +67,6 @@ deploy:
     - envsubst < k8s/app/1-pv.yaml | kubectl apply -f -
     - envsubst < k8s/app/2-pvc.yaml | kubectl apply -f -
     - envsubst < k8s/app/3-deployment.yaml | kubectl apply -f -
-  when: manual
+  #when: manual
   only:
     - main
