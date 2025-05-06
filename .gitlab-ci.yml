@@ -16,6 +16,8 @@ variables:
   CLUSTER_NAME: "app-eks-cluster"           # Nome do cluster EKS
   DOCKER_HOST: tcp://docker:2375            # Configurar o Docker para usar o serviço DinD
   DOCKER_TLS_CERTDIR: ""                    # Desabilitar TLS para simplificar
+  EFS_SERVER: "fs-0257e5cb4edb85a43.efs.us-east-1.amazonaws.com"
+  SECRET_NAME: "s3-credentials-3"
 
 before_script:
   # Instalar dependências básicas

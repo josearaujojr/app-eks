@@ -15,9 +15,9 @@ spec:
   provider: aws
   parameters:
     objects: |
-      - objectName: s3-credentials
+      - objectName: {{SECRET_NAME}}
         objectType: secretsmanager
-        objectAlias: s3-credentials-secret
+        objectAlias: {{SECRET_NAME}}-secret
         jmesPath:
           - path: AWS_ACCESS_KEY_ID
             objectAlias: aws-access-key-id
