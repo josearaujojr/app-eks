@@ -16,7 +16,7 @@ variables:
   CLUSTER_NAME: "app-eks-cluster"
   DOCKER_HOST: tcp://docker:2375
   DOCKER_TLS_CERTDIR: ""
-  EFS_SERVER: fs-09a58929b3d1cc760.efs.us-east-1.amazonaws.com
+  EFS_SERVER: fs-0d8c7dd595973346b.efs.us-east-1.amazonaws.com
   SECRET_NAME: s3-credentials-3
 
 before_script:
