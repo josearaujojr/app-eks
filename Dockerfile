@@ -1,12 +1,20 @@
-FROM php:8.2-apache
+FROM ubuntu:22.04
 
-RUN docker-php-ext-install mysqli pdo pdo_mysql xml curl zip
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Instala utilitários extras
 RUN apt-get update && apt-get install -y \
-    git \
+    apache2 \
+    mysql-client \
+    php \
+    libapache2-mod-php \
+    php-mysql \
+    php-xml \
+    php-curl \
+    php-zip \
+    curl \
     unzip \
-    curl && \
+    git \
+    tzdata && \
     rm -rf /var/lib/apt/lists/*
 
 # Instala Composer
@@ -15,8 +23,10 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 WORKDIR /var/www/html
 RUN composer require aws/aws-sdk-php:^3.258
 
+RUN a2enmod rewrite && rm /var/www/html/index.html
+
 COPY html /var/www/html/
 COPY custom-apache.conf /etc/apache2/sites-available/000-default.conf
 
 EXPOSE 80
-CMD ["apache2-foreground"]
+CMD ["apache2ctl", "-D", "FOREGROUND"]
