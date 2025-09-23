@@ -16,8 +16,8 @@ variables:
   CLUSTER_NAME: "app-eks-cluster"
   DOCKER_HOST: tcp://docker:2375
   DOCKER_TLS_CERTDIR: ""
-  EFS_SERVER: fs-0d8c7dd595973346b.efs.us-east-1.amazonaws.com
-  SECRET_NAME: s3-credentials-3
+  EFS_SERVER: fs-0fe05378af1ab65b8.efs.us-east-1.amazonaws.com
+  SECRET_NAME: s3-credentials
 
 before_script:
   - apk add --no-cache curl git unzip python3 py3-pip gettext
