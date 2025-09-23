@@ -4,7 +4,7 @@ header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 ?><!DOCTYPE html>
 <html>
   <head>
-    <title>Welcome to AWS Technical Essentials v4.1</title>
+    <title>App tests EKS v1</title>
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
   </head>
