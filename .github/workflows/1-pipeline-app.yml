@@ -8,6 +8,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.build-image.outputs.image }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -66,7 +69,6 @@ jobs:
           IMAGE: ${{ needs.build.outputs.image }}
           EFS_SERVER: fs-00749eb8bd6c95cae.efs.us-east-1.amazonaws.com
         run: |
-          export IMAGE="${{ steps.build-image.outputs.image }}"
           envsubst < k8s/app/1-pv.yaml | kubectl apply -f -
           envsubst < k8s/app/2-pvc.yaml | kubectl apply -f -
           envsubst < k8s/app/3-deployment.yaml | kubectl apply -f -
