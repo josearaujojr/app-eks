@@ -59,8 +59,9 @@ jobs:
       
       - name: Deploy to Kubernetes
         env:
+          SECRET_NAME: s3-credentials
           IMAGE: ${{ needs.build.outputs.image }}
-          EFS_SERVER: fs-0fe05378af1ab65b8.efs.us-east-1.amazonaws.com
+          EFS_SERVER: fs-00749eb8bd6c95cae.efs.us-east-1.amazonaws.com
         run: |
           export IMAGE="${{ steps.build-image.outputs.image }}"
           envsubst < k8s/app/1-pv.yaml | kubectl apply -f -
