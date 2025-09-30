@@ -89,7 +89,7 @@ jobs:
         env:
           SECRET_NAME: s3-credentials
           IMAGE: ${{ needs.build.outputs.image }}
-          EFS_SERVER: fs-082fa67fb05b2704c.efs.us-east-1.amazonaws.com
+          EFS_SERVER: fs-0f44c2000db2a9157.efs.us-east-1.amazonaws.com
         run: |
           envsubst < k8s/app/1-pv.yaml | kubectl apply -f -
           envsubst < k8s/app/2-pvc.yaml | kubectl apply -f -
