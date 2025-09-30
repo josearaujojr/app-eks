@@ -26,6 +26,7 @@ jobs:
             -Dsonar.projectKey=app-eks
             -Dsonar.sources=.
             -Dsonar.php.exclusions=vendor/**/*
+            -Dsonar.qualitygate.wait=true
 
   build:
     needs: sonarqube-scan
