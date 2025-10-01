@@ -14,7 +14,6 @@ permissions:
 env:
   AWS_DEFAULT_REGION: us-east-1
 
-#-Dsonar.qualitygate.wait=true
 jobs:
   sonarqube-scan:
     runs-on: ubuntu-latest
@@ -34,6 +33,7 @@ jobs:
             -Dsonar.projectKey=app-eks
             -Dsonar.sources=.
             -Dsonar.php.exclusions=vendor/**/*
+            -Dsonar.qualitygate.wait=true
 
   build:
     needs: sonarqube-scan
@@ -103,6 +103,4 @@ jobs:
         run: |
           envsubst < k8s/app/1-pv.yaml | kubectl apply -f -
           kubectl apply -f k8s/app/2-pvc.yaml
-          envsubst '$SECRET_NAME' < k8s/app/3-secret-provider.yaml | kubectl apply -f -
-          echo "Deploying with image: [${IMAGE}]"
-          envsubst '$IMAGE' < k8s/app/4-deployment.yaml | kubectl apply -f -
+          envsubst '$IMAGE' < k8s/app/3-deployment.yaml | kubectl apply -f -
