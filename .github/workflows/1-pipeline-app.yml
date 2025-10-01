@@ -89,7 +89,8 @@ jobs:
 
       - name: Update kubeconfig for EKS cluster
         run: |
-          aws eks update-kubeconfig --name app-eks-cluster --region us-east-1
+          aws eks update-kubeconfig --name app-eks-cluster --region us-east-1 \
+            --role-arn arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionRole
 
       - name: Kubectl for EKS cluster
         run: |
