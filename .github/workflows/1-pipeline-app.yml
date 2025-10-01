@@ -102,5 +102,5 @@ jobs:
           EFS_SERVER: ${{ secrets.EFS_SERVER }}
         run: |
           envsubst < k8s/app/1-pv.yaml | kubectl apply -f -
-          envsubst < k8s/app/2-pvc.yaml | kubectl apply -f -
-          envsubst < k8s/app/3-deployment.yaml | kubectl apply -f -
+          kubectl apply -f k8s/app/2-pvc.yaml
+          envsubst '$IMAGE' < k8s/app/3-deployment.yaml | kubectl apply -f -
