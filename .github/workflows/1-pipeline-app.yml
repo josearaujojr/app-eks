@@ -62,12 +62,12 @@ jobs:
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_NAME: app-eks-app:${{ github.sha }}
         run: |
-          docker build -t app-eks-app:${IMAGE_TAG} .
-          docker tag app-eks-app:${IMAGE_TAG} ${ECR_REGISTRY}/app-eks-app:${IMAGE_TAG}
-          docker push ${ECR_REGISTRY}/app-eks-app:${IMAGE_TAG}
-          echo "image=${ECR_REGISTRY}/app-eks-app:${IMAGE_TAG}" >> $GITHUB_OUTPUT
+          FULL_IMAGE_NAME="${ECR_REGISTRY}/${IMAGE_NAME}"
+          docker build -t "${FULL_IMAGE_NAME}" .
+          docker push "${FULL_IMAGE_NAME}"
+          echo "image=${FULL_IMAGE_NAME}" >> $GITHUB_OUTPUT
 
   deploy:
     needs: build
