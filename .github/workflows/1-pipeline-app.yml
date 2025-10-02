@@ -84,7 +84,11 @@ jobs:
       - name: Update kubeconfig for EKS cluster
         run: |
           aws eks update-kubeconfig --name app-eks-cluster --region us-east-1
-      
+
+      - name: Kubectl for EKS cluster
+        run: |
+          kubectl get pods -A
+          
       - name: Deploy to Kubernetes
         env:
           SECRET_NAME: ${{ secrets.SECRET_NAME }}
