@@ -1,19 +1,27 @@
-name: CI/CD Pipeline
+name: CI/CD - AppPHP - EKS
 
 on:
   push:
     branches:
       - main
-# -Dsonar.qualitygate.wait=true
+
+# Permissões para o token do GitHub Actions para autenticação OIDC com a AWS
+permissions:
+  id-token: write # Necessário para autenticação OIDC
+  contents: read  # Necessário para fazer o checkout do código
+  pull-requests: write # Opcional: para postar comentários do plano em PRs
+
+env:
+  AWS_DEFAULT_REGION: us-east-1
+
+#-Dsonar.qualitygate.wait=true
 jobs:
   sonarqube-scan:
-    #name: SonarQube Scan
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          # O SonarQube precisa do histórico completo para análises mais precisas
           fetch-depth: 0
 
       - name: SonarQube Scan
@@ -40,12 +48,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Configure AWS credentials for build
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionRole
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -72,9 +79,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionRole
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
@@ -84,11 +90,18 @@ jobs:
       - name: Update kubeconfig for EKS cluster
         run: |
           aws eks update-kubeconfig --name app-eks-cluster --region us-east-1
-
+      
       - name: Kubectl for EKS cluster
         run: |
           kubectl get pods -A
-          
+
+      - name: Debug envsubst output
+        env:
+          IMAGE: ${{ needs.build.outputs.image }}          
+
+      - name: Print IMAGE variable
+        run: echo "IMAGE is ${{ needs.build.outputs.image }}"
+
       - name: Deploy to Kubernetes
         env:
           SECRET_NAME: ${{ secrets.SECRET_NAME }}
