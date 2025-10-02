@@ -14,6 +14,7 @@ permissions:
 env:
   AWS_DEFAULT_REGION: us-east-1
 
+#-Dsonar.qualitygate.wait=true
 jobs:
   sonarqube-scan:
     runs-on: ubuntu-latest
@@ -33,7 +34,6 @@ jobs:
             -Dsonar.projectKey=app-eks
             -Dsonar.sources=.
             -Dsonar.php.exclusions=vendor/**/*
-            -Dsonar.qualitygate.wait=true
 
   build:
     needs: sonarqube-scan
@@ -62,12 +62,12 @@ jobs:
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_NAME: app-eks-app:${{ github.sha }}
+          IMAGE_TAG: ${{ github.sha }}
         run: |
-          FULL_IMAGE_NAME="${ECR_REGISTRY}/${IMAGE_NAME}"
-          docker build -t "${FULL_IMAGE_NAME}" .
-          docker push "${FULL_IMAGE_NAME}"
-          echo "image=${FULL_IMAGE_NAME}" >> $GITHUB_OUTPUT
+          docker build -t app-eks-app:${IMAGE_TAG} .
+          docker tag app-eks-app:${IMAGE_TAG} ${ECR_REGISTRY}/app-eks-app:${IMAGE_TAG}
+          docker push ${ECR_REGISTRY}/app-eks-app:${IMAGE_TAG}
+          echo "image=${ECR_REGISTRY}/app-eks-app:${IMAGE_TAG}" >> $GITHUB_OUTPUT
 
   deploy:
     needs: build
@@ -90,11 +90,11 @@ jobs:
       - name: Update kubeconfig for EKS cluster
         run: |
           aws eks update-kubeconfig --name app-eks-cluster --region us-east-1
-
+      
       - name: Kubectl for EKS cluster
         run: |
           kubectl get pods -A
-          
+      
       - name: Deploy to Kubernetes
         env:
           SECRET_NAME: ${{ secrets.SECRET_NAME }}
@@ -102,5 +102,5 @@ jobs:
           EFS_SERVER: ${{ secrets.EFS_SERVER }}
         run: |
           envsubst < k8s/app/1-pv.yaml | kubectl apply -f -
-          kubectl apply -f k8s/app/2-pvc.yaml
-          envsubst '$IMAGE' < k8s/app/3-deployment.yaml | kubectl apply -f -
+          envsubst < k8s/app/2-pvc.yaml | kubectl apply -f -
+          envsubst < k8s/app/3-deployment.yaml | kubectl apply -f -
