@@ -95,19 +95,13 @@ jobs:
         run: |
           kubectl get pods -A
 
-      - name: Debug envsubst output
-        env:
-          IMAGE: ${{ needs.build.outputs.image }}          
-
-      - name: Print IMAGE variable
-        run: echo "IMAGE is ${{ needs.build.outputs.image }}"
-
       - name: Deploy to Kubernetes
         env:
           SECRET_NAME: ${{ secrets.SECRET_NAME }}
           IMAGE: ${{ needs.build.outputs.image }}
           EFS_SERVER: ${{ secrets.EFS_SERVER }}
         run: |
+          echo "IMAGE is ${{ needs.build.outputs.image }}"
           envsubst < k8s/app/1-pv.yaml | kubectl apply -f -
           envsubst < k8s/app/2-pvc.yaml | kubectl apply -f -
           envsubst < k8s/app/3-deployment.yaml | kubectl apply -f -
